@@ -1,12 +1,12 @@
 {
-    "name":"Pack Name",
+    "name":"Edalgm's Editions",
     "extensions":{
-        "Extension Name": {
-          "url":"https://Extension.URL/file.js",
-          "banner": "https://Extension.URL/file.svg",
-          "description":"Description of the extension!",
-          "before": "Not Necassary but you can put this extension before any other!",
-          "tags":"Tags, Go, Here"
+        "Post-Processing": {
+          "url":"https://eureka.codingclip.cc/extensions/LoserFox/postprocessing.js",
+          "banner": "https://eureka.codingclip.cc/extensions/LoserFox/postprocessing.png",
+          "description":"Extension for dispersion, glitches and other postprocess on the stage. Created by <a href='https://scratch.mit.edu/users/LoserFox/'>LoserFox</a>.",
+          "before": "itch.io",
+          "tags":"all, LoserFox, Visual, advanced"
         }
     }
 }
