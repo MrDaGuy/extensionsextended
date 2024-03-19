@@ -48,12 +48,14 @@
             "description":"Access and modify webpage information. Created by <a href='https://scratch.mit.edu/users/NamelessCat/'>NamelessCat</a>. Works best packaged to HTML.",
             "tags":"all, NexusKitten, NamelessCat, API, Scratch, S-Grab, Turbowarp"
         },
+
+
 	 "Post-Processing": {
-		"url":"https://eureka.codingclip.cc/extensions/LoserFox/postprocessing.js",
-	        "banner":"https://eureka.codingclip.cc/extensions/LoserFox/postprocessing.png"
-	        "before":"itch.io"
-	        "description":"Extension for dispersion, glitches and other postprocess on the stage. Created by <a href='https://scratch.mit.edu/users/LoserFox/'>LoserFox</a>."
-	        "tags":"all, LoserFox, Visual, advanced"
+	 "url": "https://eureka.codingclip.cc/extensions/LoserFox/postprocessing.js",
+	 "banner": "https://eureka.codingclip.cc/extensions/LoserFox/postprocessing.png"
+	 "before": "itch.io"
+	 "description": "Extension for dispersion, glitches and other postprocess on the stage. Created by <a href='https://scratch.mit.edu/users/LoserFox/'>LoserFox</a>."
+	 "tags": "all, LoserFox, Visual, advanced"
         }
     }
 }
