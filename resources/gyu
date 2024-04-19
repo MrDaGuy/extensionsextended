@@ -1,0 +1,658 @@
+(function(Scratch) {
+  'use strict';
+  // idk why this is here
+  //let getStage = () => document.querySelectorAll('div[class^="stage_stage"] > div > canvas, div[class*=" stage_stage"] > div > canvas')[0]
+  function docsURL() {
+  	return "https://sites.google.com/view/turbowarp-io-extension-docs-88?usp=sharing"
+  }
+
+  function dec2bin(dec, len = 5) { // this dec2bin function i found on https://stackoverflow.com/questions/9939760/how-do-i-convert-an-integer-to-binary-in-javascript and im pretty sure the license is https://creativecommons.org/licenses/by-sa/3.0/ so yeah. it was made by fernandosavio on stack overflow
+    let e = (dec >>> 0).toString(2).split("")
+    //console.log(e.length)
+    let leg = e.length
+    for (let i = 0; i < (len - leg); i++) {
+      e.unshift("0")
+    }
+    e.reverse()
+    return e;
+  }
+  let IO = {
+    mouse: {
+      reaction: function(e) {
+        let m = IO.mouse
+        let buttons = dec2bin(e.buttons)
+        m.buttonsDown = buttons
+        m.clientX = e.clientX
+        m.clientY = e.clientY
+        m.deltaX = e.movementX
+        m.deltaY = e.movementY
+        m.pageX = e.pageX
+        m.pageY = e.pageY
+        m.screenX = e.screenX
+        m.screenY = e.screenY
+        //console.log(m)
+        //console.log(buttons)
+      },
+      buttonsDown: [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      clientX: 0,
+      clientY: 0,
+      deltaX: 0,
+      deltaY: 0,
+      pageX: 0,
+      pageY: 0,
+      screenX: 0,
+      screenY: 0,
+    }, // revert to an array to revert lol
+    keyboard: {
+      downReaction: function(e) {
+        let key = e.key
+        let code = e.code
+        let keyLoc = e.location
+        let k = IO.keyboard
+        console.log(key, code, keyLoc, `${key}${keyLoc ? keyLoc : ""}`)
+       // console.log(k)
+        let variation = (keyLoc === 0 || keyLoc === 1) ? "normal" : "variation"
+        //console.log(variation)
+        k.keysPressed[variation][key] = {
+          isDown: true,
+          repeat: e.repeat,
+          hit: !e.repeat // i have no idea how to implement penguin mod hit block so yeah this doesnt do anything
+        }
+        k.codesPressed[`${code}`] = true
+      },
+      upReaction: function(e) {
+        let key = e.key
+        let code = e.code
+        let keyLoc = e.location
+        let k = IO.keyboard
+        console.log(key, code, keyLoc, key + keyLoc)
+        let variation = (keyLoc === 0 || keyLoc === 1) ? "normal" : "variation"
+        k.keysPressed[variation][key] = {
+          isDown: false,
+          repeat: false,
+          hit: false
+        }
+        //delete k.keysPressed[variation][key]
+        k.codesPressed[`${code}`] = false
+      },
+      keysPressed: {
+        normal: {
+
+        },
+        variation: {
+
+        },
+      },
+      codesPressed: {
+
+      }
+    }
+  }
+  //console.log(dec2bin(31))
+  window.addEventListener("mousedown", IO.mouse.reaction)
+  window.addEventListener("mouseup", IO.mouse.reaction)
+  window.addEventListener("mousemove", IO.mouse.reaction)
+  window.addEventListener("keydown", IO.keyboard.downReaction)
+  window.addEventListener("keyup", IO.keyboard.upReaction)
+
+  //console.log()
+
+  if (!Scratch.extensions.unsandboxed) {
+    throw new Error('are you kidding me? io+ runs unsandboxed only so yeah.')
+  };
+
+  Scratch.vm.runtime.on("AFTER_EXECUTE", () => {
+  	for (const element in IO.keyboard.keysPressed.normal) {
+      //console.log(element)
+     // console.log(IO.keyboard.keysPressed.normal)
+    	IO.keyboard.keysPressed.normal[element].hit = false
+    }
+    for (const element in IO.keyboard.keysPressed.variation) {
+    	IO.keyboard.keysPressed.variation[element].hit = false
+    }
+  })
+
+  Scratch.vm.runtime.on("AFTER_EXECUTE", () => {
+    IO.mouse.deltaX = 0;
+    IO.mouse.deltaY = 0;
+  })
+
+
+
+  class HelloWorld {
+    getInfo() {
+      return {
+        id: 'vgsioplus', // vgs stands for VeryGoodScatcher42 and yes, that is my scratch account.
+        name: 'IO+',
+        color1: '#5cb1d6', // colours ripped straight out of scratch blocks
+        color2: '#47a8d1',
+        color3: '#2e8eb8',
+        docsURI: docsURL(),
+        blocks: [
+        	/*{
+          	blockType: Scratch.BlockType.BUTTON,
+            text: "Open Documentation",
+            func: "openDocs"
+          },*/
+        	{
+            opcode: "isKeyDown",
+            blockType: Scratch.BlockType.BOOLEAN,
+            text: "Is [variation] version of key [key] down?",
+            arguments: {
+              variation: {
+                type: Scratch.ArgumentType.STRING,
+                menu: "keyVariations"
+              },
+              key: {
+                type: Scratch.ArgumentType.STRING,
+                menu: "CHARACTERSDOWN"
+              }
+            }
+          },
+          {
+            opcode: "isKeyHit",
+            blockType: Scratch.BlockType.BOOLEAN,
+            text: "Is [variation] version of key [key] hit?",
+            arguments: {
+              variation: {
+                type: Scratch.ArgumentType.STRING,
+                menu: "keyVariations"
+              },
+              key: {
+                type: Scratch.ArgumentType.STRING,
+                menu: "CHARACTERSDOWN"
+              }
+            }
+          },
+          {
+            opcode: 'isMouseDown',
+            blockType: Scratch.BlockType.BOOLEAN,
+            text: 'is mouse button [button] down?',
+            arguments: {
+              button: {
+                type: Scratch.ArgumentType.STRING,
+                menu: "mouseButtons"
+              }
+            }
+          },
+          {
+            opcode: 'getMouseX',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'mouse [type] x',
+            arguments: {
+              type: {
+                type: Scratch.ArgumentType.STRING,
+                menu: "mouseData"
+              }
+            }
+          },
+         {
+            opcode: 'getMouseY',
+            blockType: Scratch.BlockType.REPORTER,
+            text: 'mouse [type] y',
+            arguments: {
+              type: {
+                type: Scratch.ArgumentType.STRING,
+                menu: "mouseData"
+              }
+            }
+          },
+        ],
+        menus: {
+          CHARACTERSDOWN: {
+            acceptReporters: true,
+            items: [
+              // we using scratch order idk what it is though
+              "space",
+              "left arrow",
+              "up arrow",
+              "right arrow",
+              "down arrow",
+              "any",
+              "a",
+              "b",
+              "c",
+              "d",
+              "e",
+              "f",
+              "g",
+              "h",
+              "i",
+              "j",
+              "k",
+              "l",
+              "m",
+              "n",
+              "o",
+              "p",
+              "q",
+              "r",
+              "s",
+              "t",
+              "u",
+              "v",
+              "w",
+              "x",
+              "y",
+              "z",
+              "A",
+              "B",
+              "C",
+              "D",
+              "E",
+              "F",
+              "G",
+              "H",
+              "I",
+              "J",
+              "K",
+              "L",
+              "M",
+              "N",
+              "O",
+              "P",
+              "Q",
+              "R",
+              "S",
+              "T",
+              "U",
+              "V",
+              "W",
+              "X",
+              "Y",
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "!",
+              "@",
+              "#",
+              "$",
+              "%",
+              "^",
+              "&",
+              "*",
+              "(",
+              ")",
+              "`",
+              "~",
+              "-",
+              "_",
+              "=",
+              "+",
+              "[",
+              "]",
+              "{",
+              "}",
+              "\\",
+              "|",
+              ";",
+              ":",
+              "'",
+              "\"",
+              ",",
+              ".",
+              "<",
+              ">",
+              "/",
+              "?",
+              "backspace", // lower case looks better and since scratch is for kids we gonna make these keys logical
+              "delete",
+              "tab",
+              "shift",
+              "caps lock",
+              "num lock",
+              "scroll lock",
+              "ctrl",
+              "alt",
+              "windows / command / search", // hmmmmm lets change this people understand
+              "esc",
+              "end",
+              "pause",
+              "insert",
+              "home",
+              "page up",
+              "page down",
+              "enter",
+              "F1",
+              "F2",
+              "F3",
+              "F4",
+              "F5",
+              "F6",
+              "F7",
+              "F8",
+              "F9",
+              "F10",
+              "F11",
+              "F12",
+              "F13",
+              "F14",
+              "F15",
+              "F16",
+              "F17",
+              "F18",
+              "F19",
+              "F20",
+              "F21",
+              "F22",
+              "F23",
+              "F24",
+              "F25",
+              "F26",
+              "F27",
+              "F28",
+              "F29",
+              "F30",
+              "F31",
+              "F32",
+              "ContextMenu", // this is the key not right click
+              "BrowserBack",
+              "BrowserForward",
+              "BrowserRefresh",
+              "BrowserFavorites",
+              "AudioVolumeMute",
+              "AudioVolumeDown",
+              "AudioVolumeUp",
+              "MediaTrackPrevious",
+              "MediaTrackNext",
+              "MediaPlayPause",
+              "LaunchMail",
+              "LaunchMediaPlayer",
+              "LaunchApplication1",
+              "LaunchApplication2",
+              // found these on chromebook
+              "BrightnessUp",
+              "BrightnessDown",
+              "ZoomToggle",
+              "PowerOff"
+            ]
+          },
+          keyVariations: {
+            acceptReporters: true,
+            items: [
+              "any",
+              {
+                value: "normal",
+                text: "standard/left"
+              },
+              {
+                value: "variation",
+                text: "numpad/right"
+              }
+            ]
+          },
+          mouseButtons: {
+            acceptReporters: true,
+            items: [
+              "(0) Primary",
+              "(1) Secondary",
+              "(2) Middle",
+              "(3) Fourth (typically the browser back button)",
+              "(4) Fifth (typically the browser forward button)"
+            ]
+          },
+          mouseData: {
+            acceptReporters: true,
+            items: [
+              "client",
+              "page",
+              "delta",
+              "screen",
+            ]
+          }
+        }
+      };
+    }
+		convertToKey(key) {
+    	
+    	switch (true) {
+      	case (key.toLowerCase() == "left arrow"):
+        	key = "ArrowLeft"
+          break
+        case (key.toLowerCase() == "right arrow"):
+        	key = "ArrowRight"
+          break
+        case (key.toLowerCase() == "up arrow"):
+        	key = "ArrowUp"
+          break
+        case (key.toLowerCase() == "down arrow"):
+        	key = "ArrowDown"
+          break
+        case (key.toLowerCase() == "space"):
+        	key = " "
+          break
+        case (key.toLowerCase() == "enter"):
+        	key = "Enter"
+          break
+        case (key.toLowerCase() == "backspace"):
+        	key = "Backspace"
+          break
+        case (key.toLowerCase() == "delete"):
+        	key = "Delete"
+          break
+        case (key.toLowerCase() == "tab"):
+        	key = "Tab"
+          break
+        case (key.toLowerCase() == "shift"):
+        	key = "Shift"
+          break
+        case (key.toLowerCase() == "caps lock"):
+          key = "CapsLock"
+          break
+        case (key.toLowerCase() == "num lock"):
+        	key = "NumLock"
+          break
+        case (key.toLowerCase() == "scroll lock"):
+        	key = "ScrollLock"
+          break
+        case (key.toLowerCase() == "ctrl" || key.toLowerCase() == "control"):
+        	key = "Control"
+          break
+        case (key.toLowerCase() == "alt"):
+        	key = "Alt"
+          break
+        case (key.toLowerCase() == "meta" || key.toLowerCase() == "windows" || key.toLowerCase() == "command" || key.toLowerCase() == "search" || key.toLowerCase() == "windows / command / search"):
+        	key = "Meta"
+          break
+        case (key.toLowerCase() == "escape" || key.toLowerCase() == "esc"):
+        	key = "Escape"
+          break
+        case (key.toLowerCase() == "end"):
+        	key = "End"
+          break
+        case (key.toLowerCase() == "pause"):
+        	key = "Pause"
+          break
+        case (key.toLowerCase() == "insert"):
+        	key = "Insert"
+          break
+        case (key.toLowerCase() == "home"):
+        	key = "Home"
+          break
+        case (key.toLowerCase() == "page up"):
+        	key = "PageUp"
+          break
+        case (key.toLowerCase() == "page down"):
+        	key = "PageDown"
+          break
+        	
+      }
+      return Scratch.Cast.toString(key)
+    }
+    isKeyDown({variation, key}, util) {
+      let k = IO.keyboard
+      key = this.convertToKey(key)
+      // TODO: convert certain scratch named keys to their javascript names
+      
+      if (variation != "normal" && variation != "variation") {
+        if (variation == "any") {
+          // TODO: handle any variation later
+          if (key == "any") {
+            for (const el in k.keysPressed.normal) {
+              if (k.keysPressed[variation][el].isDown == true) {
+                return true
+              }
+            }
+            for (const el in k.keysPressed.variation) {
+              if (k.keysPressed[variation][el].isDown == true) {
+                return true
+              }
+            }
+          } else {
+            if (k.keysPressed.normal[key] && k.keysPressed.variation[key]) {
+              return Scratch.Cast.toBoolean(k.keysPressed.normal[key].isDown || k.keysPressed.variation[key].isDown)
+            }
+            if (k.keysPressed.normal[key]) {
+              return Scratch.Cast.toBoolean(k.keysPressed.normal[key].isDown)
+            }
+            if (k.keysPressed.variation[key]) {
+              return Scratch.Cast.toBoolean(k.keysPressed.variation[key].isDown)
+            }
+
+          }
+        }
+        return false
+      }
+      if (key == "any") {
+        for (const el in k.keysPressed[variation]) {
+          if (k.keysPressed[variation][el].isDown == true) {
+            return true
+          }
+        }
+      }
+      if (k.keysPressed[variation][key]) {
+        return Scratch.Cast.toBoolean(k.keysPressed[variation][key].isDown)
+      }
+      return false;
+    }
+    isKeyHit({variation, key}, util) {
+      let k = IO.keyboard
+      key = this.convertToKey(key)
+      // TODO: convert certain scratch named keys to their javascript names
+      
+      if (variation != "normal" && variation != "variation") {
+        if (variation == "any") {
+          // TODO: handle any variation later
+          if (key == "any") {
+            for (const el in k.keysPressed.normal) {
+              if (k.keysPressed[variation][el].hit == true) {
+                return true
+              }
+            }
+            for (const el in k.keysPressed.variation) {
+              if (k.keysPressed[variation][el].hit == true) {
+                return true
+              }
+            }
+          } else {
+            if (k.keysPressed.normal[key] && k.keysPressed.variation[key]) {
+              return Scratch.Cast.toBoolean(k.keysPressed.normal[key].hit || k.keysPressed.variation[key].hit)
+            }
+            if (k.keysPressed.normal[key]) {
+              return Scratch.Cast.toBoolean(k.keysPressed.normal[key].hit)
+            }
+            if (k.keysPressed.variation[key]) {
+              return Scratch.Cast.toBoolean(k.keysPressed.variation[key].hit)
+            }
+
+          }
+        }
+        return false
+      }
+      if (key == "any") {
+        for (const el in k.keysPressed[variation]) {
+          if (k.keysPressed[variation][el].hit == true) {
+            return true
+          }
+        }
+      }
+			if (!k.keysPressed[variation]) {return false}
+      if (k.keysPressed[variation][key]) {
+        return Scratch.Cast.toBoolean(k.keysPressed[variation][key].hit)
+      }
+      return false;
+    }
+    isMouseDown({
+      button
+    }, util) {
+      let m = IO.mouse
+      switch (Scratch.Cast.toString(button)) {
+        case "primary":
+        case "0":
+        case "(0) Primary":
+          return m.buttonsDown[0] == "1"
+          break
+        case "secondary":
+        case "1":
+        case "(1) Secondary":
+          return m.buttonsDown[1] == "1"
+          break
+        case "middle":
+        case "2":
+        case "(2) Middle":
+          return m.buttonsDown[2] == "1"
+          break
+        case "fourth":
+        case "3":
+        case "(3) Fourth (typically the browser back button)":
+          return m.buttonsDown[3] == "1"
+          break
+        case "fifth":
+        case "4":
+        case "(4) Fifth (typically the browser forward button)":
+          return m.buttonsDown[4] == "1"
+          break
+      }
+      return false
+      m.buttonsDown;
+    }
+    getMouseX({type}, util) {
+      let m = IO.mouse
+      switch (Scratch.Cast.toString(type)) {
+        case "client":
+          return m.clientX
+        case "page":
+          return m.pageX
+        case "delta":
+          return m.deltaX
+        case "screen":
+          return m.screenX
+      }
+      return 0
+    }
+    getMouseY({type}, util) {
+      let m = IO.mouse
+      switch (Scratch.Cast.toString(type)) {
+        case "client":
+          return m.clientY
+        case "page":
+          return m.pageY
+        case "delta":
+          return m.deltaY
+        case "screen":
+          return m.screenY
+      }
+      return 0
+    }
+    openDocs() {
+    	if (Scratch.canOpenWindow) {Scratch.openWindow(docsURL(), "_blank")}
+    }
+  }
+  Scratch.extensions.register(new HelloWorld());
+
+})(Scratch)
+
+//console.log("end")
